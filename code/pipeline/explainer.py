@@ -194,8 +194,8 @@ def persona_pass_fail(
     # Cap 4: Diversity
     div_score = plan_result.get("diversity_score", 0)
     results["Diversity Engine"] = {
-        "pass": div_score >= 0.6,
-        "note": f"Diversity score: {div_score:.3f} (threshold: 0.6)",
+        "pass": div_score >= 0.7,
+        "note": f"Diversity score: {div_score:.3f} (threshold: 0.7)",
     }
 
     # Cap 5: Nutrient analysis

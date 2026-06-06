@@ -324,28 +324,41 @@ PERSONAS = {
         "weight": 62, "height": 165, "calorie_target": 1800,
         "conditions": ["IBS"], "allergens": ["dairy"],
         "diet_type": "Vegetarian",
-        "pass_rules": "Zero high-FODMAP trigger foods. Zero dairy. All meatless. Iron ≥ 80% RDA.",
+        "pass_rules": "Zero high-FODMAP trigger foods. Zero dairy. All meatless. Iron >= 80% RDA.",
+        "micro_checks": [
+            {"nutrient": "iron", "label": "Iron >= 80% RDA", "type": "pct_rda", "threshold": 80, "unit": "mg"},
+        ],
     },
     "Ravi – GERD + Non-Veg + Gluten-Free": {
         "name": "Ravi", "age": 45, "sex": "Male",
         "weight": 82, "height": 178, "calorie_target": 2200,
         "conditions": ["GERD"], "allergens": ["gluten"],
         "diet_type": "Non-Vegetarian",
-        "pass_rules": "Zero GERD triggers. Zero gluten. Diversity ≥ 0.7. B12 ≥ 80% RDA.",
+        "pass_rules": "Zero GERD triggers. Zero gluten. Diversity >= 0.7. Vitamin B12 >= 80% RDA.",
+        "micro_checks": [
+            {"nutrient": "vitB12", "label": "Vitamin B12 >= 80% RDA", "type": "pct_rda", "threshold": 80, "unit": "mcg"},
+        ],
     },
     "Mei – Type 2 Diabetes + Vegan + Tree Nut Allergy": {
         "name": "Mei", "age": 55, "sex": "Female",
         "weight": 68, "height": 160, "calorie_target": 1600,
         "conditions": ["Diabetes"], "allergens": ["tree_nuts"],
         "diet_type": "Vegan",
-        "pass_rules": "All GI ≤ 55. Zero animal products. Zero tree nuts. Fibre ≥ 25 g/day.",
+        "pass_rules": "All GI <= 55. Zero animal products. Zero tree nuts. Fibre >= 25 g/day.",
+        "micro_checks": [
+            {"nutrient": "fiber", "label": "Fibre >= 25 g/day (avg)", "type": "abs_min", "threshold": 25, "unit": "g"},
+        ],
     },
     "James – Hypertension + Pescatarian + Soy Allergy": {
         "name": "James", "age": 50, "sex": "Male",
         "weight": 90, "height": 182, "calorie_target": 2000,
         "conditions": ["Hypertension"], "allergens": ["soy"],
         "diet_type": "Pescatarian",
-        "pass_rules": "Sodium ≤ 1,500 mg/day. Zero soy. ≥ 3 fish meals. Potassium ≥ 80% RDA.",
+        "pass_rules": "Sodium <= 1,500 mg/day. Zero soy. >= 3 fish meals. Potassium >= 80% RDA.",
+        "micro_checks": [
+            {"nutrient": "sodium",    "label": "Sodium <= 1,500 mg/day (avg)", "type": "abs_max", "threshold": 1500, "unit": "mg"},
+            {"nutrient": "potassium", "label": "Potassium >= 80% RDA",         "type": "pct_rda", "threshold": 80,   "unit": "mg"},
+        ],
     },
 }
 
@@ -1025,10 +1038,42 @@ with tab6:
                     seed=123,
                 )
                 pf = persona_pass_fail(p_result, p_config["name"], p_config)
-                pf["gen_time"] = p_result["generation_time"]
-                pf["diversity"] = p_result["diversity_score"]
-                pf["n_safe"]   = p_result["n_foods_available"]
+                pf["gen_time"]   = p_result["generation_time"]
+                pf["diversity"]  = p_result["diversity_score"]
+                pf["n_safe"]     = p_result["n_foods_available"]
                 pf["pass_rules"] = p_config["pass_rules"]
+
+                # Compute quantitative micronutrient checks for Table 2 verification
+                p_rda     = get_rda(p_config["sex"], p_config["age"])
+                p_analysis = analyze_plan(p_result["plan_nutrients"], p_rda)
+                p_avg     = p_analysis["weekly_avg"]
+                key_metrics = []
+                for chk in p_config.get("micro_checks", []):
+                    nutrient  = chk["nutrient"]
+                    unit      = chk["unit"]
+                    actual    = p_avg.get(nutrient, 0.0)
+                    chk_type  = chk["type"]
+                    threshold = chk["threshold"]
+                    if chk_type == "pct_rda":
+                        rda_val = p_rda.get(nutrient, 1)
+                        pct     = actual / rda_val * 100 if rda_val > 0 else 0
+                        passes  = pct >= threshold
+                        value   = f"{pct:.0f}% RDA (avg {actual:.1f} {unit}/day)"
+                    elif chk_type == "abs_min":
+                        passes  = actual >= threshold
+                        value   = f"avg {actual:.1f} {unit}/day"
+                    elif chk_type == "abs_max":
+                        passes  = actual <= threshold
+                        value   = f"avg {actual:.0f} {unit}/day"
+                    else:
+                        passes  = True
+                        value   = f"{actual:.1f} {unit}"
+                    key_metrics.append({
+                        "label":  chk["label"],
+                        "pass":   passes,
+                        "value":  value,
+                    })
+                pf["key_metrics"] = key_metrics
                 persona_results.append(pf)
 
         st.success("All 4 persona tests completed!")
@@ -1053,9 +1098,15 @@ with tab6:
             with st.expander(f"**{pf['persona']}** — {'✅ All Pass' if pf['all_pass'] else '⚠️ Review needed'}"):
                 st.markdown(f"**Pass criteria:** {pf['pass_rules']}")
                 st.markdown(f"**Generation time:** {pf['gen_time']:.2f}s | **Diversity score:** {pf['diversity']:.3f} | **Foods available:** {pf['n_safe']}")
+                st.markdown("**6 Core Capabilities:**")
                 for cap, info in pf["capabilities"].items():
                     badge = "✅" if info["pass"] else "❌"
-                    st.markdown(f"{badge} **{cap}** — {info['note']}")
+                    st.markdown(f"  {badge} **{cap}** — {info['note']}")
+                if pf.get("key_metrics"):
+                    st.markdown("**Quantitative Nutrient Checks (spec Table 2):**")
+                    for m in pf["key_metrics"]:
+                        badge = "✅" if m["pass"] else "❌"
+                        st.markdown(f"  {badge} **{m['label']}** — {m['value']}")
 
     else:
         st.info("Click **Run All 4 Persona Tests** to validate the app against Priya, Ravi, Mei, and James.")
