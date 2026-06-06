@@ -113,30 +113,12 @@ NutriAI_MealPlan/
 └── prompts.md
 ```
 
----
-
-## Deployment (Streamlit Cloud)
-
-1. Push this repository to GitHub
-2. Go to https://share.streamlit.io → New App → select your repo
-3. Set **Main file path** to `code/app.py`
-4. Click Deploy
-
-The app will auto-install `requirements.txt` and run `data_setup.py --offline` on first launch (via Streamlit's init mechanism).
-
----
-
-## Submission
-
-ZIP the project as: `LastName_FirstName_BAX423_Final.zip`
-
 Contents:
 - `code/`     — all source code
 - `data/`     — foods_snapshot.csv + foods.db
 - `brief.pdf` — 4-page technical brief
 - `prompts.md`— key AI prompts used
 
-Plus the live hosted app URL.
 
 ---
 
