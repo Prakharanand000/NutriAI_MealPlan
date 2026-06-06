@@ -378,7 +378,6 @@ _init_state()
 with st.sidebar:
     st.image("https://img.icons8.com/color/96/salad.png", width=80)
     st.title("NutriAI")
-    st.caption("BAX-423 · UC Davis GSM · Spring 2026")
     st.divider()
 
     st.header("👤 Your Profile")
@@ -446,10 +445,6 @@ faiss_index, faiss_id_map, faiss_meta = get_faiss_index(FOODS_CSV)
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.html("""
 <div class="main-header">
-  <div style="font-size:10px;color:#888;font-weight:700;letter-spacing:2px;
-              text-transform:uppercase;margin-bottom:10px;">
-    BAX-423 · UC Davis GSM · Spring 2026
-  </div>
   <h1>&#x1F957; NutriAI &mdash; Automated Diet Plan Builder</h1>
   <p>Personalised 7-day meal plans &nbsp;&middot;&nbsp; Clinical Safety &nbsp;&middot;&nbsp;
      Allergen-Free &nbsp;&middot;&nbsp; Sub-60s Generation</p>
