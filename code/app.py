@@ -367,7 +367,7 @@ def _init_state():
         p_name="Alex", p_age=35, p_sex="Male",
         p_weight=70.0, p_height=170, p_cal=2000,
         p_conditions=[], p_allergen_labels=[],
-        p_diet="Non-Vegetarian", p_cultural=[], p_seed=42,
+        p_diet="Non-Vegetarian", p_cultural=[],
     )
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -431,11 +431,8 @@ with st.sidebar:
             default=st.session_state.p_cultural, key="p_cultural"
         )
 
-    with st.expander("⚙️ Advanced Options"):
-        plan_seed = st.number_input("Random seed", 0, 9999,
-                                    int(st.session_state.p_seed), key="p_seed",
-                                    help="Change for a different plan")
-        show_exclusions = st.checkbox("Show full exclusion log", value=True)
+    show_exclusions = st.checkbox("Show full exclusion log", value=True)
+    plan_seed = 42  # fixed seed for reproducibility
 
     st.divider()
     generate_btn = st.button(
@@ -465,28 +462,28 @@ _PERSONA_PRESETS = {
         "p_name": "Priya", "p_age": 32, "p_sex": "Female",
         "p_weight": 62.0, "p_height": 165, "p_cal": 1800,
         "p_conditions": ["IBS"], "p_allergen_labels": ["Dairy / Lactose"],
-        "p_diet": "Vegetarian", "p_cultural": [], "p_seed": 42,
+        "p_diet": "Vegetarian", "p_cultural": [],
         "caption": "IBS · Vegetarian · Dairy-free",
     },
     "🍖 Ravi": {
         "p_name": "Ravi", "p_age": 45, "p_sex": "Male",
         "p_weight": 82.0, "p_height": 178, "p_cal": 2200,
         "p_conditions": ["GERD"], "p_allergen_labels": ["Gluten (Coeliac)"],
-        "p_diet": "Non-Vegetarian", "p_cultural": [], "p_seed": 42,
+        "p_diet": "Non-Vegetarian", "p_cultural": [],
         "caption": "GERD · Non-Veg · Gluten-free",
     },
     "🌱 Mei": {
         "p_name": "Mei", "p_age": 55, "p_sex": "Female",
         "p_weight": 68.0, "p_height": 160, "p_cal": 1600,
         "p_conditions": ["Diabetes"], "p_allergen_labels": ["Tree Nuts"],
-        "p_diet": "Vegan", "p_cultural": [], "p_seed": 42,
+        "p_diet": "Vegan", "p_cultural": [],
         "caption": "Diabetes · Vegan · Tree-nut-free",
     },
     "🐟 James": {
         "p_name": "James", "p_age": 50, "p_sex": "Male",
         "p_weight": 90.0, "p_height": 182, "p_cal": 2000,
         "p_conditions": ["Hypertension"], "p_allergen_labels": ["Soy"],
-        "p_diet": "Pescatarian", "p_cultural": [], "p_seed": 42,
+        "p_diet": "Pescatarian", "p_cultural": [],
         "caption": "Hypertension · Pescatarian · Soy-free",
     },
 }

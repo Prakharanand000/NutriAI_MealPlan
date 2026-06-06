@@ -32,6 +32,16 @@ import pandas as pd
 import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Load USDA_API_KEY from .env if present (key is never committed to git)
+_env_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(_env_path):
+    with open(_env_path) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
 DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -477,7 +487,7 @@ def save(df: pd.DataFrame):
 
 def main():
     parser = argparse.ArgumentParser(description="NutriAI Data Setup")
-    parser.add_argument("--api-key",  default="",      help="USDA FDC API key")
+    parser.add_argument("--api-key",  default=os.environ.get("USDA_API_KEY", ""), help="USDA FDC API key (defaults to USDA_API_KEY env var)")
     parser.add_argument("--offline",  action="store_true", help="Use offline snapshot generator")
     parser.add_argument("--count",    action="store_true", help="Print record count and exit")
     args = parser.parse_args()
