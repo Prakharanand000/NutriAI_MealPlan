@@ -185,7 +185,7 @@ def persona_pass_fail(
     }
 
     # Cap 3: Diet compliance
-    diet = criteria.get("diet", "")
+    diet = criteria.get("diet_type", criteria.get("diet", "Non-Vegetarian"))
     results["Diet Compliance"] = {
         "pass": True,
         "note": f"Diet type '{diet}' enforced by diet_filter.py",

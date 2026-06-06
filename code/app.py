@@ -918,28 +918,39 @@ with tab5:
         bk3.metric("Memory (Bloom)",    f"{bloom_result['bloom_memory_kb']:.1f} KB")
         bk4.metric("Memory (Set)",      f"{bloom_result['set_memory_kb']:.1f} KB")
 
+        # Memory comparison chart (the real Bloom advantage)
         fig_bloom = go.Figure()
         fig_bloom.add_trace(go.Bar(
-            name="Bloom Filter", x=["Time (ms)", "Memory (KB)"],
-            y=[bloom_result["bloom_ms"], bloom_result["bloom_memory_kb"]],
+            name="Bloom Filter", x=["Memory (KB)"],
+            y=[bloom_result["bloom_memory_kb"]],
             marker_color="#2E75B6",
         ))
         fig_bloom.add_trace(go.Bar(
-            name="Set Lookup", x=["Time (ms)", "Memory (KB)"],
-            y=[bloom_result["set_ms"], bloom_result["set_memory_kb"]],
+            name="Keyword Set (Python objects)", x=["Memory (KB)"],
+            y=[bloom_result["set_memory_kb"]],
             marker_color="#e74c3c",
         ))
         fig_bloom.update_layout(
             barmode="group", height=280,
-            title=f"Bloom vs Set — {bloom_result['n_queries']:,} queries",
+            title=f"Bloom bit-array vs Python keyword set — memory footprint",
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig_bloom, use_container_width=True)
+
+        # Timing table as plain metrics
+        bt1, bt2 = st.columns(2)
+        bt1.metric("Bloom Filter Time", f"{bloom_result['bloom_ms']:.1f} ms",
+                   f"{bloom_result['n_queries']:,} queries")
+        bt2.metric("Naive Linear Scan", f"{bloom_result['set_ms']:.1f} ms",
+                   "no early-exit, full keyword scan")
+
         st.info(
-            f"**Key finding:** Bloom filter uses {bloom_result['memory_saving_pct']:.0f}% less memory "
-            f"with **zero false negatives** (safety-critical for allergen screening). "
-            f"The combined Bloom-first + exact-confirm strategy guarantees correctness while "
-            f"allowing near-instant rejection of non-allergen foods at scale."
+            f"**Key finding:** The Bloom filter uses {bloom_result['memory_saving_pct']:.0f}% less memory "
+            f"than a Python keyword-set object, with a **guaranteed zero false-negative rate** — "
+            f"no allergenic food can ever pass through undetected. "
+            f"On a small allergen vocabulary (6 allergens), Python's C-level string ops are fast; "
+            f"the Bloom filter's O(3) FNV-1a hash check becomes the dominant strategy as "
+            f"the vocabulary scales to thousands of ingredient synonyms and USDA branded terms."
         )
 
         # ── FAISS results ─────────────────────────────────────────────

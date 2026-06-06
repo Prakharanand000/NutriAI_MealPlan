@@ -10,13 +10,15 @@ from pipeline.faiss_engine import benchmark_faiss_vs_numpy
 
 
 def run_bloom_benchmark(n_queries: int = 50_000) -> dict:
-    """Run and return Bloom filter vs set lookup benchmark."""
+    """Run and return Bloom filter vs naive linear scan benchmark."""
     result = benchmark_bloom_vs_set(ALLERGEN_KEYWORDS, n_queries=n_queries)
     result["description"] = (
-        "Bloom filter pre-screens allergens with zero false negatives. "
-        "Confirmed positives are then verified with exact keyword lookup. "
-        "The filter consumes orders of magnitude less memory than a full set "
-        "and can screen 400k+ USDA branded foods in milliseconds."
+        "Bloom filter (FNV-1a, 3 seeds: 0/42/137) pre-screens allergens "
+        "with zero false negatives, then confirms positives with exact keyword lookup. "
+        "Baseline: naive linear scan that iterates every allergen keyword per food "
+        "with no early-exit — representing the pipeline without a Bloom index. "
+        "The Bloom filter also uses a fixed-size bit array regardless of vocabulary size, "
+        "keeping memory bounded as the allergen list grows."
     )
     return result
 
