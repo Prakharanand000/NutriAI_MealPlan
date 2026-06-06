@@ -3,6 +3,8 @@
 
 > A full-stack AI-assisted application that generates a personalised 7-day meal plan in under 60 seconds, tailored to clinical conditions, allergens, dietary preferences, and nutrient targets.
 
+**Live app:** https://nutriaimealplan-prakhar.streamlit.app/
+
 ---
 
 ## Quick Start
