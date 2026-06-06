@@ -1,5 +1,4 @@
 # NutriAI – Automated Diet Plan Builder
-**BAX-423 Big Data · Spring 2026 · UC Davis GSM**
 
 > A full-stack AI-assisted application that generates a personalised 7-day meal plan in under 60 seconds, tailored to clinical conditions, allergens, dietary preferences, and nutrient targets.
 
@@ -119,8 +118,3 @@ Contents:
 - `brief.pdf` — 4-page technical brief
 - `prompts.md`— key AI prompts used
 
-
----
-
-*Built with Streamlit · FAISS · Bloom Filter · RL Bandit · USDA FoodData Central*
-*BAX-423 Big Data · Dr. Rahul Makhijani · UC Davis GSM · Spring 2026*
