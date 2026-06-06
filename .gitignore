@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+.DS_Store
+Thumbs.db
+spec.txt
+BAX423_FinalProject_NutriAI_Spring2026.docx
+BAX423_Final_OnePager.pdf
