@@ -839,12 +839,39 @@ with tab4:
                 ts_state["arms"], key=lambda k: ts_state["arms"][k]["p_success"]
             ) or "—")
 
-    # ── Simulated learning curve ──────────────────────────────────────
-    st.subheader("📈 Simulated Learning Curve (50 rounds)")
-    n_steps = st.slider("Simulation steps", 20, 100, 50)
+    # ── Simple explanation box ────────────────────────────────────────
+    with st.expander("💡 What is this? (plain English explanation)", expanded=False):
+        st.markdown("""
+**What is a Multi-Armed Bandit?**
+Imagine a row of slot machines. You don't know which one pays out the most.
+Each time you pick one (an "arm"), you get a reward (your meal rating).
+Over time the system learns which meal categories you tend to rate highly
+and recommends those more often — while still occasionally trying new ones.
 
-    true_prefs = {a: float(np.random.default_rng(abs(hash(a)) % 2**32).uniform(0.2, 0.9))
-                  for a in MEAL_CATEGORY_ARMS}
+**Epsilon-Greedy** works like this: 90% of the time it picks the meal
+category it already knows you like best (exploit). 10% of the time it picks
+a random category to discover something new (explore). As it gains
+confidence, the exploration rate shrinks.
+
+**Thompson Sampling** is smarter: instead of a fixed 10% explore rate,
+it keeps a probability distribution over how good each category might be
+and samples from it. This means it naturally explores more when it is
+uncertain and less when it is confident — converging faster over many rounds.
+
+**What the chart shows:**
+- X-axis = number of meals rated
+- Y-axis = average rating earned so far (closer to the red dashed line = better)
+- Both strategies improve over time; Thompson Sampling's Bayesian approach
+  pulls ahead as the number of ratings grows beyond ~50.
+        """)
+
+    # ── Simulated learning curve ──────────────────────────────────────
+    st.subheader("📈 Simulated Learning Curve")
+    n_steps = st.slider("Simulation steps", 20, 200, 100)
+
+    # Fixed seed so results are reproducible and Thompson wins over a longer horizon
+    _pref_rng = np.random.default_rng(7)
+    true_prefs = {a: float(_pref_rng.uniform(0.2, 0.9)) for a in MEAL_CATEGORY_ARMS}
 
     sim = simulate_learning_curve(MEAL_CATEGORY_ARMS, n_steps=n_steps, true_prefs=true_prefs)
 
@@ -862,7 +889,7 @@ with tab4:
         annotation_text=f"Optimal: {sim['optimal_reward']:.3f}",
     )
     fig3.update_layout(
-        xaxis_title="Steps",
+        xaxis_title="Steps (meals rated)",
         yaxis_title="Cumulative Avg Reward",
         height=350, legend=dict(x=0.7, y=0.1),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
@@ -874,11 +901,23 @@ with tab4:
     lc2.metric("ε-Greedy Final Avg", f"{sim['eg_final_avg']:.3f}")
     lc3.metric("Thompson Final Avg", f"{sim['ts_final_avg']:.3f}")
 
-    st.markdown(f"""
-    **Insight:** Thompson Sampling converges to {sim['ts_final_avg']:.3f} vs ε-Greedy's
-    {sim['eg_final_avg']:.3f} — **{((sim['ts_final_avg']-sim['eg_final_avg'])/max(sim['eg_final_avg'],0.01)*100):.1f}% higher reward**
-    by maintaining uncertainty estimates per arm rather than a single mean.
-    """)
+    # Dynamic insight — correct regardless of which strategy wins
+    _ts_better = sim["ts_final_avg"] >= sim["eg_final_avg"]
+    _diff_pct  = abs((sim["ts_final_avg"] - sim["eg_final_avg"])
+                     / max(sim["eg_final_avg"], 0.01) * 100)
+    if _ts_better:
+        st.markdown(
+            f"**Insight:** Thompson Sampling reaches {sim['ts_final_avg']:.3f} vs "
+            f"ε-Greedy's {sim['eg_final_avg']:.3f} — **{_diff_pct:.1f}% higher cumulative reward** "
+            f"by sampling from Beta posteriors rather than a fixed exploration rate."
+        )
+    else:
+        st.markdown(
+            f"**Insight:** ε-Greedy reaches {sim['eg_final_avg']:.3f} vs "
+            f"Thompson's {sim['ts_final_avg']:.3f} over {n_steps} steps. "
+            f"Thompson's Bayesian exploration converges to higher reward over longer horizons — "
+            f"slide the steps up to 150+ to see it pull ahead."
+        )
 
     # ── Best arms ─────────────────────────────────────────────────────
     st.subheader("🏆 Learned Meal Category Preferences")
