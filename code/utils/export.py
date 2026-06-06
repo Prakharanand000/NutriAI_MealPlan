@@ -77,6 +77,20 @@ def plan_to_pdf(plan_result: dict) -> bytes:
 
     profile = plan_result.get("profile", {})
 
+    def _safe(text: str) -> str:
+        """Strip/replace characters outside Latin-1 so Helvetica won't crash."""
+        return (
+            str(text)
+            .replace("–", "-")   # en-dash
+            .replace("—", "-")   # em-dash
+            .replace("’", "'")   # right single quote
+            .replace("‘", "'")   # left single quote
+            .replace("“", '"')   # left double quote
+            .replace("”", '"')   # right double quote
+            .replace("µ", "u")   # micro sign
+            .encode("latin-1", errors="replace").decode("latin-1")
+        )
+
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -84,16 +98,16 @@ def plan_to_pdf(plan_result: dict) -> bytes:
     # ── Title ─────────────────────────────────────────────────────────
     pdf.set_font("Helvetica", "B", 18)
     pdf.set_text_color(27, 42, 74)    # dark blue
-    pdf.cell(0, 10, "NutriAI – 7-Day Personalised Meal Plan", ln=True, align="C")
+    pdf.cell(0, 10, _safe("NutriAI - 7-Day Personalised Meal Plan"), ln=True, align="C")
 
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(80, 80, 80)
-    pdf.cell(0, 6,
+    pdf.cell(0, 6, _safe(
              f"Generated: {date.today()} | "
              f"User: {profile.get('name', 'N/A')} | "
              f"Diet: {profile.get('diet_type', 'N/A')} | "
              f"Conditions: {', '.join(profile.get('conditions', [])) or 'None'} | "
-             f"Allergens: {', '.join(profile.get('allergens', [])) or 'None'}",
+             f"Allergens: {', '.join(profile.get('allergens', [])) or 'None'}"),
              ln=True, align="C")
 
     pdf.set_text_color(0, 0, 0)
@@ -118,7 +132,7 @@ def plan_to_pdf(plan_result: dict) -> bytes:
         pdf.set_text_color(255, 255, 255)
         pdf.cell(
             sum(col_w), 7,
-            f"Day {day_obj['day']} – {day_obj['label']}",
+            _safe(f"Day {day_obj['day']} - {day_obj['label']}"),
             ln=True, fill=True,
         )
         pdf.set_text_color(0, 0, 0)
@@ -138,9 +152,9 @@ def plan_to_pdf(plan_result: dict) -> bytes:
                 f"{f['food_name']} {f['grams']}g" for f in meal.get("foods", [])
             )[:60]
             values = [
-                day_obj['label'][:6],
-                meal["meal_type"].capitalize()[:8],
-                foods_str,
+                _safe(day_obj['label'][:6]),
+                _safe(meal["meal_type"].capitalize()[:8]),
+                _safe(foods_str),
                 f"{n.get('calories', 0):.0f} kcal",
                 f"{n.get('protein', 0):.1f} g",
                 f"{n.get('fiber', 0):.1f} g",
@@ -148,7 +162,7 @@ def plan_to_pdf(plan_result: dict) -> bytes:
             fill = False
             pdf.set_fill_color(245, 248, 252)
             for w, v in zip(col_w, values):
-                pdf.cell(w, 6, str(v), border=1, fill=fill)
+                pdf.cell(w, 6, _safe(str(v)), border=1, fill=fill)
             pdf.ln()
 
         pdf.ln(3)
@@ -159,12 +173,12 @@ def plan_to_pdf(plan_result: dict) -> bytes:
     # ── Exclusions ────────────────────────────────────────────────────
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Food Exclusion Log ('Why Excluded')", ln=True)
+    pdf.cell(0, 8, "Food Exclusion Log (Why Excluded)", ln=True)
     pdf.set_font("Helvetica", "", 8)
     for ex in plan_result.get("exclusions", [])[:40]:
-        food   = ex.get("food_name", "")[:35]
-        reason = ex.get("reason", "")[:80]
-        pdf.multi_cell(0, 5, f"• {food}: {reason}")
+        food   = _safe(ex.get("food_name", "")[:35])
+        reason = _safe(ex.get("reason", "")[:80])
+        pdf.multi_cell(0, 5, f"- {food}: {reason}")
 
     return bytes(pdf.output())
 
