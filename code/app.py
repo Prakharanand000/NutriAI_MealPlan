@@ -39,7 +39,8 @@ st.set_page_config(
 )
 
 # ── CSS theme (KhabarLens-inspired editorial design) ──────────────────────────
-st.markdown("""
+# st.html() is the correct API in Streamlit 1.36+ for injecting raw HTML/CSS
+st.html("""
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   /* ── Global typography ── */
@@ -284,7 +285,7 @@ st.markdown("""
     margin-bottom: 10px;
   }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 # ── Data loading (cached) ──────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Loading food database…")
@@ -446,17 +447,17 @@ foods_df = load_foods()
 faiss_index, faiss_id_map, faiss_meta = get_faiss_index(FOODS_CSV)
 
 # ── Header ─────────────────────────────────────────────────────────────────────
-st.markdown("""
+st.html("""
 <div class="main-header">
   <div style="font-size:10px;color:#888;font-weight:700;letter-spacing:2px;
               text-transform:uppercase;margin-bottom:10px;">
     BAX-423 · UC Davis GSM · Spring 2026
   </div>
-  <h1>🥗 NutriAI — Automated Diet Plan Builder</h1>
-  <p>Personalised 7-day meal plans &nbsp;·&nbsp; Clinical Safety &nbsp;·&nbsp;
-     Allergen-Free &nbsp;·&nbsp; Sub-60s Generation</p>
+  <h1>&#x1F957; NutriAI &mdash; Automated Diet Plan Builder</h1>
+  <p>Personalised 7-day meal plans &nbsp;&middot;&nbsp; Clinical Safety &nbsp;&middot;&nbsp;
+     Allergen-Free &nbsp;&middot;&nbsp; Sub-60s Generation</p>
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ── Persona quick-select ──────────────────────────────────────────────────────
 _PERSONA_PRESETS = {
@@ -496,16 +497,16 @@ def _apply_persona(preset: dict):
         if k != "caption":
             st.session_state[k] = v
 
-st.markdown("""
+st.html("""
 <div class="persona-section">
-  <div class="persona-label">⚡ Quick-load a test persona</div>
+  <div class="persona-label">&#9889; Quick-load a test persona</div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
 _pcols = st.columns(len(_PERSONA_PRESETS))
 for _col, (_label, _preset) in zip(_pcols, _PERSONA_PRESETS.items()):
     with _col:
-        st.markdown('<div class="persona-btn">', unsafe_allow_html=True)
+        st.html('<div class="persona-btn">')
         st.button(
             _label,
             use_container_width=True,
@@ -513,14 +514,13 @@ for _col, (_label, _preset) in zip(_pcols, _PERSONA_PRESETS.items()):
             on_click=_apply_persona,
             args=(_preset,),
         )
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown(
+        st.html('</div>')
+        st.html(
             f'<div style="font-size:10px;color:#888;text-align:center;'
-            f'letter-spacing:0.5px;margin-top:-8px;">{_preset["caption"]}</div>',
-            unsafe_allow_html=True
+            f'letter-spacing:0.5px;margin-top:-8px;">{_preset["caption"]}</div>'
         )
 
-st.markdown('<hr style="border-top:2px solid #111;margin:16px 0 8px;">', unsafe_allow_html=True)
+st.html('<hr style="border-top:2px solid #111;margin:16px 0 8px;">')
 
 col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
 col_stat1.metric("Food Database", f"{len(foods_df):,} items")
