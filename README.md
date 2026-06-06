@@ -23,9 +23,6 @@ python data_setup.py --api-key YOUR_USDA_API_KEY
 # 4. Launch the app
 streamlit run app.py
 ```
-
-App runs at: http://localhost:8501
-
 ---
 
 ## Six Core Capabilities
