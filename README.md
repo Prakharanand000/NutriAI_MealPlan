@@ -86,7 +86,7 @@ App runs at: http://localhost:8501
 ## Project Structure
 
 ```
-Niti_BAX423/
+NutriAI_MealPlan/
 ├── code/
 │   ├── app.py                  ← Streamlit app (streamlit run app.py)
 │   ├── config.py               ← RDA tables, FODMAP rules, allergen maps
